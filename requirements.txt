@@ -25,7 +25,7 @@ pydantic_core==2.41.5
 pytest==9.0.2
 python-dotenv==1.2.1
 python-magic==0.4.27
-python-multipart==0.0.21
+python-multipart==0.0.22
 PyYAML==6.0.3
 psycopg2==2.9.11
 requests==2.32.5
