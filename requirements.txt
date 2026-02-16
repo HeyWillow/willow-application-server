@@ -20,7 +20,7 @@ num2words==0.5.14
 paho-mqtt==2.1.0
 pydantic==2.12.5
 pydantic-extra-types==2.11.0
-pydantic-settings==2.12.0
+pydantic-settings==2.13.0
 pydantic_core==2.41.5
 pytest==9.0.2
 python-dotenv==1.2.1
