@@ -1,6 +1,6 @@
 {
   "WAS": {
-    "URL": "wss://was.local"
+    "URL": "wss://was.local/ws"
   },
   "WIFI": {
     "PSK": "mypassword",
