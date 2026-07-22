@@ -22,7 +22,7 @@ pydantic==2.13.0
 pydantic-extra-types==2.11.0
 pydantic-settings==2.14.2
 pydantic_core==2.46.0
-pytest==9.0.2
+pytest==9.1.1
 python-dotenv==1.2.1
 python-magic==0.4.27
 python-multipart==0.0.22
