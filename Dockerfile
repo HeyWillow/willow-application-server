@@ -8,24 +8,24 @@ WORKDIR /app
 
 RUN --mount=type=cache,target=/var/cache/apk apk add --cache-dir /var/cache/apk alpine-sdk libpq-dev python3-dev uv
 
-COPY pyproject.toml .
+COPY pyproject.toml uv.lock ./
 
-ENV VIRTUAL_ENV=/opt/venv
+ENV UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/opt/venv
 
-RUN uv venv /opt/venv
-RUN --mount=type=cache,target=/root/.cache uv pip install -r pyproject.toml
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-install-project
 
 COPY . .
 
 COPY --from=was-ui /was-ui/out/ /app/static/admin/
 
-ENV PATH="$PATH:/opt/venv/bin"
+ENV PATH="/opt/venv/bin:$PATH"
 
 RUN PYTHONPATH=/app pytest -s
 
 FROM alpine:3.21
 
-ENV PATH="$PATH:/opt/venv/bin"
+ENV PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
 
