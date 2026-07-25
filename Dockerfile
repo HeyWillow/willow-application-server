@@ -1,8 +1,9 @@
+ARG ALPINE_VERSION="3.21"
 ARG WAS_UI_TAG="main"
 
 FROM ghcr.io/heywillow/willow-application-server-ui:${WAS_UI_TAG} AS was-ui
 
-FROM alpine:3.21 AS build
+FROM alpine:${ALPINE_VERSION} AS build
 
 WORKDIR /app
 
@@ -23,7 +24,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 RUN PYTHONPATH=/app pytest -s
 
-FROM alpine:3.21
+FROM alpine:${ALPINE_VERSION}
 
 ENV PATH="/opt/venv/bin:$PATH"
 
