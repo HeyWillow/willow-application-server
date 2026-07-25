@@ -66,16 +66,6 @@ dep_check() {
     return
 }
 
-freeze_requirements() {
-    if [ ! -f /.dockerenv ]; then
-        echo "This script is meant to be run inside the container - exiting"
-        exit 1
-    fi
-
-    # Freeze
-    pip freeze > requirements.txt
-}
-
 build-docker() {
     docker build --build-arg "WAS_VERSION=$WAS_VERSION" -t "$IMAGE":"$TAG" .
 }
@@ -110,10 +100,6 @@ build-docker|build)
 
 build-web-ui)
     build-web-ui
-;;
-
-freeze-requirements)
-    freeze_requirements
 ;;
 
 start|run|up)
