@@ -21,7 +21,6 @@ paho-mqtt==2.1.0
 pydantic==2.13.0
 pydantic-extra-types==2.11.1
 pydantic-settings==2.14.2
-pydantic_core==2.46.0
 pytest==9.1.1
 python-dotenv==1.2.2
 python-magic==0.4.27
