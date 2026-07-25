@@ -8,12 +8,12 @@ WORKDIR /app
 
 RUN --mount=type=cache,target=/var/cache/apk apk add --cache-dir /var/cache/apk alpine-sdk libpq-dev python3-dev uv
 
-COPY requirements.txt .
+COPY pyproject.toml .
 
 ENV VIRTUAL_ENV=/opt/venv
 
 RUN uv venv /opt/venv
-RUN --mount=type=cache,target=/root/.cache uv pip install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache uv pip install -r pyproject.toml
 
 COPY . .
 
