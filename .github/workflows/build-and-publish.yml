@@ -71,6 +71,8 @@ jobs:
           build-args: |
             WAS_UI_TAG=${{ steps.tag.outputs.WAS_UI_TAG }}
             WAS_VERSION=${{ steps.gd.outputs.WAS_VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
