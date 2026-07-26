@@ -10,7 +10,13 @@ from pydantic import BaseModel, Field
 from requests import get
 
 from ..const import DIR_OTA
-from ..internal.was import get_release_url, get_releases_willow, get_safe_path, get_was_url
+from ..internal.was import (
+    get_release_url,
+    get_releases_willow,
+    get_safe_path,
+    get_was_url,
+    is_willow_release_compatible,
+)
 
 
 log = getLogger("WAS")
@@ -33,10 +39,29 @@ async def api_get_release(release: GetRelease = Depends()):
             raise HTTPException(status_code=500, detail="WAS URL not set")
 
         try:
+            latest_compatible_found = False
             for release in releases:
                 tag_name = release["tag_name"]
+                compatible = is_willow_release_compatible(tag_name)
+                release["was_compatible"] = compatible
+
+                release["latest"] = False
+                if (
+                    compatible
+                    and tag_name != "local"
+                    and not release.get("prerelease", False)
+                    and not latest_compatible_found
+                ):
+                    release["latest"] = True
+                    latest_compatible_found = True
+
                 assets = release["assets"]
                 for asset in assets:
+                    if not compatible:
+                        asset.pop("was_url", None)
+                        asset.pop("cached", None)
+                        continue
+
                     platform = asset["platform"]
                     asset["was_url"] = get_release_url(was_url, tag_name, platform)
                     ota_path = os.path.join(DIR_OTA, tag_name, f"{platform}.bin")
