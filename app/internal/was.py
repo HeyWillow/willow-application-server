@@ -14,6 +14,7 @@ from hashlib import sha256
 from logging import getLogger
 
 from num2words import num2words
+from semver import Version
 from websockets.sync.client import connect
 
 from app.db.main import get_config_db, get_nvs_db, save_config_to_db, save_nvs_to_db
@@ -28,6 +29,7 @@ from ..const import (
     STORAGE_USER_WAS,
     URL_WILLOW_RELEASES,
     URL_WILLOW_TZ,
+    WILLOW_MIN_SR_MODEL_OTA_VERSION,
 )
 
 
@@ -208,6 +210,18 @@ def get_release_url(was_url, version, platform):
 
     url = f"{scheme}://{parsed.netloc}/api/ota?version={version}&platform={platform}"
     return url
+
+
+def is_willow_release_compatible(version):
+    if version == "local":
+        return True
+
+    try:
+        release_version = Version.parse(version.removeprefix("v"))
+    except ValueError:
+        return True
+
+    return release_version < WILLOW_MIN_SR_MODEL_OTA_VERSION
 
 
 # TODO: Find a better way but we need to handle every error possible

@@ -12,6 +12,14 @@ client = TestClient(app)
 
 
 class TestOta(unittest.TestCase):
+    def test_rejects_incompatible_release(self):
+        response = client.get("/api/ota?platform=ESP32-S3-BOX-3&version=0.5.0")
+
+        assert response.status_code == 409
+        assert response.json()["detail"] == (
+            "This Willow release requires a newer Willow Application Server"
+        )
+
     def test_get_ota(self):
         mock_uri_bad = "/api/ota?platform=ESP32-S3-BOX-3&version=0.0.0-mock.0/../../.."
         mock_uri_good = "/api/ota?platform=ESP32-S3-BOX-3&version=0.0.0-mock.0"
