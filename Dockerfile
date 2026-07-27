@@ -1,7 +1,7 @@
 ARG ALPINE_VERSION="3.24"
 ARG WAS_UI_TAG="main"
 
-FROM ghcr.io/heywillow/willow-application-server-ui:${WAS_UI_TAG} AS was-ui
+FROM --platform=$BUILDPLATFORM ghcr.io/heywillow/willow-application-server-ui:${WAS_UI_TAG} AS was-ui
 
 FROM alpine:${ALPINE_VERSION} AS build
 
