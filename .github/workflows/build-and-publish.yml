@@ -28,7 +28,7 @@ jobs:
           fetch-tags: true
 
       - name: configure QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: 'arm64'
 
