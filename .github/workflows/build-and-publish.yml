@@ -12,7 +12,7 @@ on:
     branches:
       - 'main'
       - 'release/**'
-    tag:
+    tags:
       - '*'
 
 jobs:
@@ -48,18 +48,14 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: latest=auto
           tags: |
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/0.1.') }}
-            type=raw,value=rc,enable=${{ contains(github.ref, '-rc.') }}
             type=semver,pattern={{version}}
             type=ref,event=branch
-            type=raw,value=main,enable=true
 
       - name: extract tag name
         id: tag
-        run: |
-          tag=${{ fromJSON(steps.metadata.outputs.json).tags[0] }}
-          echo "WAS_UI_TAG=${tag##*:}" >> $GITHUB_OUTPUT
+        run: echo "WAS_UI_TAG=${{ steps.metadata.outputs.version || 'main' }}" >> $GITHUB_OUTPUT
 
       - name: git describe
         run: echo "WAS_VERSION=$(git describe --always --dirty --tags)" >> $GITHUB_OUTPUT
@@ -78,4 +74,6 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/riscv64
           push: ${{ github.event_name == 'push' && github.actor != 'dependabot[bot]' }}
           labels: ${{ steps.metadata.outputs.labels }}
-          tags: ${{ steps.metadata.outputs.tags }}
+          tags: |
+            ${{ steps.metadata.outputs.tags }}
+            ${{ contains(steps.metadata.outputs.version, '-rc.') && format('{0}/{1}:rc', env.REGISTRY, env.IMAGE_NAME) || '' }}
