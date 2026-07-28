@@ -5,16 +5,20 @@ FROM --platform=$BUILDPLATFORM ghcr.io/heywillow/willow-application-server-ui:${
 
 FROM alpine:${ALPINE_VERSION} AS build
 
+ARG TARGETARCH
+
 WORKDIR /app
 
-RUN --mount=type=cache,target=/var/cache/apk apk add --cache-dir /var/cache/apk alpine-sdk cargo libpq-dev python3-dev uv
+RUN --mount=type=cache,id=was-apk-${TARGETARCH},target=/var/cache/apk,sharing=locked \
+    apk add --cache-dir /var/cache/apk alpine-sdk cargo libpq-dev python3-dev uv
 
 COPY pyproject.toml uv.lock ./
 
 ENV UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/opt/venv
 
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-install-project
+RUN --mount=type=cache,id=was-uv-${TARGETARCH},target=/root/.cache/uv,sharing=locked \
+    uv sync --locked --no-install-project
 
 COPY . .
 
@@ -26,11 +30,14 @@ RUN PYTHONPATH=/app pytest -s
 
 FROM alpine:${ALPINE_VERSION}
 
+ARG TARGETARCH
+
 ENV PATH="/opt/venv/bin:$PATH"
 
 WORKDIR /app
 
-RUN --mount=type=cache,target=/var/cache/apk apk add --cache-dir /var/cache/apk libmagic libpq python3
+RUN --mount=type=cache,id=was-apk-${TARGETARCH},target=/var/cache/apk,sharing=locked \
+    apk add --cache-dir /var/cache/apk libmagic libpq python3
 
 COPY --from=build /app /app
 COPY --from=build /opt/venv /opt/venv
