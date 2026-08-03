@@ -35,6 +35,7 @@ from app.internal.command_endpoints import (
     CommandEndpointRuntimeException
 )
 from app.internal.command_endpoints.main import init_command_endpoint
+from app.internal.migration import backup_legacy_file
 from app.internal.was import (
     build_msg,
     get_config,
@@ -78,10 +79,12 @@ def db_migrations():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    migrate_user_files()
+    backup_legacy_user_files()
+
     # database schema migrations
     db_migrations()
 
-    migrate_user_files()
     get_tz_config(refresh=True)
 
     user_config = get_config()
@@ -149,6 +152,17 @@ def migrate_user_files():
             dest = f"storage/{user_file}"
             if not os.path.isfile(dest):
                 move(user_file, dest)
+
+
+def backup_legacy_user_files():
+    for user_file in (
+        STORAGE_USER_CONFIG,
+        STORAGE_USER_NVS,
+        STORAGE_USER_CLIENT_CONFIG,
+    ):
+        backup_path = backup_legacy_file(user_file)
+        if backup_path is not None:
+            log.info(f"backed up legacy user configuration to {backup_path}")
 
 
 def hex_mac(mac):
