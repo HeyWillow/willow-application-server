@@ -1,9 +1,31 @@
 from pathlib import Path
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
+from app.db import main as db
 from app.internal import was
 from app.internal.migration import LEGACY_BACKUP_SUFFIX, backup_legacy_file
+
+
+class FailingSession:
+    def __init__(self):
+        self.rolled_back = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
+
+    def add(self, record):
+        pass
+
+    def commit(self):
+        raise IntegrityError("statement", {}, RuntimeError("migration failed"))
+
+    def rollback(self):
+        self.rolled_back = True
 
 
 def test_backup_legacy_file_preserves_original(tmp_path):
@@ -45,3 +67,30 @@ def test_get_devices_rejects_invalid_legacy_file(tmp_path, monkeypatch):
 
     with pytest.raises(ValueError, match="is not a list"):
         was.get_devices()
+
+
+@pytest.mark.parametrize(
+    ("migrate", "content"),
+    [
+        (db.migrate_user_config, {"aec": True}),
+        (
+            db.migrate_user_nvs,
+            {
+                "WAS": {"URL": "http://was.example/ws"},
+                "WIFI": {"PSK": "secret", "SSID": "willow"},
+            },
+        ),
+        (
+            db.migrate_user_client_config,
+            [{"label": "Kitchen", "mac_addr": "00:11:22:33:44:55"}],
+        ),
+    ],
+)
+def test_failed_database_migration_is_reported(monkeypatch, migrate, content):
+    session = FailingSession()
+    monkeypatch.setattr(db, "Session", lambda engine: session)
+
+    with pytest.raises(IntegrityError):
+        migrate(content)
+
+    assert session.rolled_back is True
