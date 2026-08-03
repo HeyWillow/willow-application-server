@@ -102,9 +102,9 @@ def migrate_user_config(config):
         try:
             session.commit()
         except IntegrityError as e:
-            # TODO avoid users thinking something is wrong here
             log.warning(e)
             session.rollback()
+            raise
 
 
 def migrate_user_client_config(clients):
@@ -121,9 +121,9 @@ def migrate_user_client_config(clients):
         try:
             session.commit()
         except IntegrityError as e:
-            # TODO avoid users thinking something is wrong here
             log.warning(e)
             session.rollback()
+            raise
 
 
 def migrate_user_nvs(config):
@@ -156,9 +156,9 @@ def migrate_user_nvs(config):
         try:
             session.commit()
         except IntegrityError as e:
-            # TODO avoid users thinking something is wrong here
             log.warning(e)
             session.rollback()
+            raise
 
 
 def save_client_config_to_db(clients):
