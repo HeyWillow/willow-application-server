@@ -113,16 +113,14 @@ def get_config():
 
 
 def get_devices():
-    devices = []
+    if not os.path.isfile(STORAGE_USER_CLIENT_CONFIG):
+        return []
 
-    if os.path.isfile(STORAGE_USER_CLIENT_CONFIG):
-        with open(STORAGE_USER_CLIENT_CONFIG, "r") as devices_file:
-            devices = json.load(devices_file)
-        devices_file.close()
-    else:
-        with open(STORAGE_USER_CLIENT_CONFIG, "x") as devices_file:
-            json.dump(devices, devices_file)
-        devices_file.close()
+    with open(STORAGE_USER_CLIENT_CONFIG, "r") as devices_file:
+        devices = json.load(devices_file)
+
+    if not isinstance(devices, list):
+        raise ValueError("legacy user client configuration is not a list")
 
     return devices
 
