@@ -105,11 +105,11 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             log.error(f"failed to migrate user nvs to database: {e}")
 
-    devices = get_devices()
-    # skip migration if devices is empty
-    if devices:
+    if os.path.isfile(STORAGE_USER_CLIENT_CONFIG):
         try:
-            migrate_user_client_config(devices)
+            devices = get_devices()
+            if devices:
+                migrate_user_client_config(devices)
             os.remove(STORAGE_USER_CLIENT_CONFIG)
         except Exception as e:
             log.error(f"failed to migrate user client config to database: {e}")
