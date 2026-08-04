@@ -41,9 +41,31 @@ def test_utils_detects_linux_ip(tmp_path):
     result = run_utils(
         tmp_path,
         {
+            "uname": 'echo "Linux"',
             "ip": 'echo "1.1.1.1 via 192.0.2.1 dev eth0 src 192.0.2.10 uid 1000"',
         },
     )
 
     assert result.returncode == 0
     assert "WAS Web UI URL is http://192.0.2.10:8502" in result.stdout
+
+
+def test_utils_detects_macos_ip_from_default_interface(tmp_path):
+    result = run_utils(
+        tmp_path,
+        {
+            "uname": 'echo "Darwin"',
+            "route": (
+                'test "$1 $2" = "get default"\n'
+                'printf "   route to: default\\ninterface: en0\\n"'
+            ),
+            "ifconfig": (
+                'test "$1" = "en0"\n'
+                "printf '\\tinet6 ::1 prefixlen 128\\n'\n"
+                "printf '\\tinet 192.168.20.150 netmask 0xffffff00 broadcast 192.168.20.255\\n'"
+            ),
+        },
+    )
+
+    assert result.returncode == 0
+    assert "WAS Web UI URL is http://192.168.20.150:8502" in result.stdout
