@@ -1,20 +1,20 @@
-#!/usr/bin/env bash
+#!/bin/sh
 set -e
-WAS_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+WAS_DIR=$(CDPATH= cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)
 cd "$WAS_DIR"
 
 # Test for local environment file and use any overrides
 if [ -r .env ]; then
     echo "Using configuration overrides from .env file"
-    . .env
+    . ./.env
 else
     echo "Using default configuration values"
     touch .env
 fi
 
-#Import source the .env file
+# Import the .env file
 set -a
-source .env
+. ./.env
 
 # Which docker image to run
 IMAGE=${IMAGE:-willow-application-server}
@@ -46,7 +46,16 @@ WEB_UI_DIR="willow-application-server-ui"
 WEB_UI_URL="https://github.com/HeyWillow/willow-application-server-ui.git"
 
 # Reachable WAS IP for the "default" interface
-WAS_IP=$(ip route get 1.1.1.1 | grep -oP 'src \K\S+')
+WAS_ROUTE=$(ip route get 1.1.1.1)
+case "$WAS_ROUTE" in
+    *" src "*)
+        WAS_IP=${WAS_ROUTE#* src }
+        WAS_IP=${WAS_IP%% *}
+        ;;
+    *)
+        WAS_IP=""
+        ;;
+esac
 
 # Get WAS version
 export WAS_VERSION=$(git describe --always --dirty --tags)
@@ -66,11 +75,11 @@ dep_check() {
     return
 }
 
-build-docker() {
+build_docker() {
     docker build --build-arg "WAS_VERSION=$WAS_VERSION" -t "$IMAGE":"$TAG" .
 }
 
-build-web-ui() {
+build_web_ui() {
     mkdir -p "$WAS_DIR"/work
     cd "$WAS_DIR"/work
     if [ -d "$WEB_UI_DIR/node_modules" ]; then
@@ -88,18 +97,18 @@ build-web-ui() {
 }
 
 shell() {
-    docker run -it -v $WAS_DIR:/app -v $WAS_DIR/cache:/root/.cache -v willow-application-server_was-storage:/app/storage "$IMAGE":"$TAG" \
-        /usr/bin/env bash
+    docker run -it -v "$WAS_DIR:/app" -v "$WAS_DIR/cache:/root/.cache" -v willow-application-server_was-storage:/app/storage "$IMAGE":"$TAG" \
+        /bin/sh
 }
 
 case $1 in
 
 build-docker|build)
-    build-docker
+    build_docker
 ;;
 
 build-web-ui)
-    build-web-ui
+    build_web_ui
 ;;
 
 start|run|up)
