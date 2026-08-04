@@ -46,11 +46,26 @@ WEB_UI_DIR="willow-application-server-ui"
 WEB_UI_URL="https://github.com/HeyWillow/willow-application-server-ui.git"
 
 # Reachable WAS IP for the "default" interface
-WAS_ROUTE=$(ip route get 1.1.1.1)
-case "$WAS_ROUTE" in
-    *" src "*)
-        WAS_IP=${WAS_ROUTE#* src }
-        WAS_IP=${WAS_IP%% *}
+case "$(uname -s)" in
+    Darwin)
+        WAS_INTERFACE=$(route get default 2>/dev/null | awk '/interface:/ { print $2; exit }')
+        if [ -n "$WAS_INTERFACE" ]; then
+            WAS_IP=$(ifconfig "$WAS_INTERFACE" | awk '$1 == "inet" { print $2; exit }')
+        else
+            WAS_IP=""
+        fi
+        ;;
+    Linux)
+        WAS_ROUTE=$(ip route get 1.1.1.1)
+        case "$WAS_ROUTE" in
+            *" src "*)
+                WAS_IP=${WAS_ROUTE#* src }
+                WAS_IP=${WAS_IP%% *}
+                ;;
+            *)
+                WAS_IP=""
+                ;;
+        esac
         ;;
     *)
         WAS_IP=""
