@@ -7,7 +7,7 @@ dependencies = [
     "annotated-types==0.8.0",
     "anyio==4.14.2",
     "certifi==2026.7.22",
-    "charset-normalizer==3.4.9",
+    "charset-normalizer==3.5.0",
     "click==8.4.2",
     "dnspython==2.8.0",
     "docopt==0.6.2",
